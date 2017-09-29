@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# coding: utf8
 
 from __future__ import print_function
 
@@ -67,16 +68,30 @@ def autodetectKeyboard():
         import sdl2.keyboard
         from sdl2 import keycode
         sdl2.SDL_Init(sdl2.SDL_INIT_VIDEO)
-        keys = bytes(sdl2.keyboard.SDL_GetKeyFromScancode(sc) for sc in (keycode.SDL_SCANCODE_Q, keycode.SDL_SCANCODE_W, keycode.SDL_SCANCODE_Y))
-        keyMap = {
-            b'qwy': 'qwerty',
-            b'azy': 'azerty',
-            b'qwz': 'qwertz',
-            b'qwj': 'colemak',
-            b'\',f': 'dvorak',
-        }
-        if keys in keyMap:
-            return keyMap.get(keys, 'unknown')
+        keys = bytearray(sdl2.keyboard.SDL_GetKeyFromScancode(sc) for sc in (keycode.SDL_SCANCODE_Q, keycode.SDL_SCANCODE_W, keycode.SDL_SCANCODE_Y))
+        if keys == b'qwy':
+            layout = 'qwerty'
+        elif keys == b'azy':
+            layout = 'azerty'
+        elif keys == b'qwz':
+            layout = 'qwertz'
+        elif keys == b'qwj':
+            layout = 'colemak'
+        elif keys == b'q,f':
+            layout = 'dvorak'
+        elif keys == b'b\xe9y':
+            # SDL2 doesn't seem to map deadkey ^ and falls back to y
+            layout = 'bépo'
+        else:
+            layout = None
+
+        if layout is None:
+            print("Could not detect keyboard (%s). Falling back to qwerty." % keys)
+            return "qwerty"
+        else:
+            if layout != "qwerty":
+                print("%s keyboard detected." % layout)
+            return layout
     except:
         print("Could not detect keyboard (is PySDL2 installed?). Falling back to qwerty.")
         return "qwerty"
